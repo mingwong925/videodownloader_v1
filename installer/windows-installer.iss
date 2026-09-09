@@ -8,6 +8,7 @@ OutputBaseFilename=Pianke-Setup
 Compression=lzma
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64compatible
+SetupIconFile=assets\icon.ico
 
 [Files]
 Source: "dist\Pianke\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion

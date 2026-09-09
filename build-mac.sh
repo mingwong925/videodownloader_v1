@@ -2,8 +2,10 @@
 set -eu
 
 python3 -m pip install -r desktop-requirements.txt
+test -f assets/icon.icns
 python3 -m PyInstaller --noconfirm --clean --windowed --onedir \
   --name Pianke \
+  --icon assets/icon.icns \
   --add-data "static:static" \
   --collect-all imageio_ffmpeg \
   --collect-all yt_dlp \

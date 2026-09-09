@@ -37,6 +37,8 @@ build-windows.bat
 
 Windows 輸出位置是 `dist\\Pianke\\Pianke.exe`。Mac 建置必須在 Mac 執行，Windows 建置必須在 Windows 執行；建置腳本會把網站資產、yt-dlp 與 FFmpeg 一起打包。
 
+App icon 來源是 `assets/icon-source.png`，建置時會套用到 macOS App、Windows App 與 Windows 安裝程式。
+
 ## 安裝檔
 
 GitHub Actions 的 `Build Desktop Installers` workflow 會自動建立：
