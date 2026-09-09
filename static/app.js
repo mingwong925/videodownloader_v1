@@ -11,11 +11,17 @@ function addJobCard(id) {
   jobList.prepend(card); return card;
 }
 async function pollJob(id, card) {
-  const response = await fetch(`/api/download/${id}`); const job = await response.json();
-  const title = card.querySelector('.job-title'); const meta = card.querySelector('.job-meta'); const bar = card.querySelector('i'); bar.style.width = `${job.progress || 0}%`;
-  if (job.status === 'ready') { title.textContent = '下載完成'; meta.textContent = '檔案已準備好'; const button = document.createElement('button'); button.textContent = '下載檔案 ↓'; button.onclick = () => { window.location.href = `/api/file/${id}`; }; card.append(button); return; }
-  if (job.status === 'error') { card.classList.add('error'); title.textContent = '下載失敗'; meta.textContent = job.error || '請確認網址後再試一次'; return; }
-  meta.textContent = job.status === 'queued' ? '排隊中' : `處理中 ${job.progress || 0}%`; window.setTimeout(() => pollJob(id, card), 900);
+  const title = card.querySelector('.job-title'); const meta = card.querySelector('.job-meta'); const bar = card.querySelector('i');
+  try {
+    const response = await fetch(`/api/download/${id}`); const job = await response.json();
+    bar.style.width = `${job.progress || 0}%`;
+    if (job.status === 'ready') {
+      title.textContent = '下載完成'; meta.textContent = '按下按鈕將檔案儲存到你的電腦';
+      const link = document.createElement('a'); link.className = 'download-link'; link.textContent = '下載檔案 ↓'; link.href = `/api/file/${encodeURIComponent(id)}`; link.download = ''; link.target = '_blank'; link.rel = 'noopener'; card.append(link); return;
+    }
+    if (job.status === 'error') { card.classList.add('error'); title.textContent = '下載失敗'; meta.textContent = job.error || '請確認網址後再試一次'; return; }
+    meta.textContent = job.status === 'queued' ? '排隊中' : `${job.status === 'converting' ? '轉檔中' : '下載中'} ${job.progress || 0}%`; window.setTimeout(() => pollJob(id, card), 900);
+  } catch (error) { card.classList.add('error'); title.textContent = '無法取得下載狀態'; meta.textContent = '服務可能正在休眠，請重新提交網址'; }
 }
 form.addEventListener('submit', async (event) => {
   event.preventDefault(); const button = form.querySelector('button'); button.disabled = true; button.firstChild.textContent = '建立工作中 ';

@@ -175,7 +175,12 @@ def get_file(job_id: str) -> FileResponse:
     if not path.exists() or path.parent != DOWNLOAD_DIR:
         raise HTTPException(status_code=404, detail="檔案不存在")
     safe_name = re.sub(r"[^\w\-. ]", "_", filename.split("_", 1)[-1])
-    return FileResponse(path, filename=safe_name, media_type="application/octet-stream")
+    return FileResponse(
+        path,
+        filename=safe_name,
+        media_type="application/octet-stream",
+        headers={"Cache-Control": "no-store", "Content-Disposition": f'attachment; filename="{safe_name}"'},
+    )
 
 
 @app.delete("/api/download/{job_id}")
