@@ -17,7 +17,15 @@ async function pollJob(id, card) {
     bar.style.width = `${job.progress || 0}%`;
     if (job.status === 'ready') {
       title.textContent = '下載完成'; meta.textContent = '按下按鈕將檔案儲存到你的電腦';
-      const link = document.createElement('a'); link.className = 'download-link'; link.textContent = '下載檔案 ↓'; link.href = `/api/file/${encodeURIComponent(id)}`; link.download = ''; link.target = '_blank'; link.rel = 'noopener'; card.append(link); return;
+      const link = document.createElement('a'); link.className = 'download-link'; link.textContent = '下載檔案 ↓'; link.href = `/api/file/${encodeURIComponent(id)}`; link.download = ''; link.target = '_blank'; link.rel = 'noopener';
+      link.addEventListener('click', async (event) => {
+        if (!window.pywebview?.api?.download_file) return;
+        event.preventDefault();
+        link.textContent = '儲存中…';
+        try { const savedPath = await window.pywebview.api.download_file(id, job.filename || 'pianke-video.mp4'); meta.textContent = `已儲存至 ${savedPath}`; link.textContent = '已儲存 ✓'; }
+        catch (error) { meta.textContent = '儲存失敗，請再試一次'; link.textContent = '下載檔案 ↓'; }
+      });
+      card.append(link); return;
     }
     if (job.status === 'error') { card.classList.add('error'); title.textContent = '下載失敗'; meta.textContent = job.error || '請確認網址後再試一次'; return; }
     meta.textContent = job.status === 'queued' ? '排隊中' : `${job.status === 'converting' ? '轉檔中' : '下載中'} ${job.progress || 0}%`; window.setTimeout(() => pollJob(id, card), 900);

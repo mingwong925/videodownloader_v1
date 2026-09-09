@@ -3,6 +3,8 @@ from __future__ import annotations
 import socket
 import threading
 import time
+import urllib.request
+from pathlib import Path
 
 import webview
 from uvicorn import Config, Server
@@ -26,12 +28,26 @@ def wait_for_server(port: int) -> None:
     raise RuntimeError("本機下載服務啟動失敗")
 
 
+class DesktopApi:
+    def __init__(self, port: int) -> None:
+        self.port = port
+
+    def download_file(self, job_id: str, filename: str) -> str:
+        downloads = Path.home() / "Downloads"
+        downloads.mkdir(exist_ok=True)
+        safe_name = Path(filename).name or f"pianke-{job_id}.mp4"
+        destination = downloads / safe_name
+        with urllib.request.urlopen(f"http://127.0.0.1:{self.port}/api/file/{job_id}") as response:
+            destination.write_bytes(response.read())
+        return str(destination)
+
+
 def main() -> None:
     port = get_free_port()
     server = Server(Config(app, host="127.0.0.1", port=port, log_level="warning"))
     threading.Thread(target=server.run, daemon=True).start()
     wait_for_server(port)
-    webview.create_window("片刻 | 萬用影片下載器", f"http://127.0.0.1:{port}", width=1120, height=820, min_size=(720, 600))
+    webview.create_window("片刻 | 萬用影片下載器", f"http://127.0.0.1:{port}", js_api=DesktopApi(port), width=1120, height=820, min_size=(720, 600))
     webview.start()
     server.should_exit = True
 
