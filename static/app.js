@@ -19,7 +19,7 @@ async function pollJob(id, card) {
       title.textContent = '下載完成'; meta.textContent = '按下按鈕將檔案儲存到你的電腦';
       const link = document.createElement('a'); link.className = 'download-link'; link.textContent = '下載檔案 ↓'; link.href = `/api/file/${encodeURIComponent(id)}`; link.download = ''; link.target = '_blank'; link.rel = 'noopener';
       link.addEventListener('click', async (event) => {
-        if (!window.pywebview?.api?.download_file) return;
+        if (!window.pywebview?.api?.save_file) return;
         event.preventDefault();
         link.textContent = '儲存中…';
         try { const savedPath = await window.pywebview.api.save_file(id, job.filename || 'pianke-video.mp4'); if (!savedPath) { meta.textContent = '已取消儲存'; link.textContent = '下載檔案 ↓'; } else { meta.textContent = `已儲存至 ${savedPath}`; link.textContent = '已儲存 ✓'; } }
