@@ -2,3 +2,6 @@ __pycache__/
 .venv/
 downloads/
 *.pyc
+build/
+dist/
+*.spec
