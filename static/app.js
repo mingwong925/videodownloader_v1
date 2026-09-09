@@ -22,8 +22,8 @@ async function pollJob(id, card) {
         if (!window.pywebview?.api?.download_file) return;
         event.preventDefault();
         link.textContent = '儲存中…';
-        try { const savedPath = await window.pywebview.api.download_file(id, job.filename || 'pianke-video.mp4'); meta.textContent = `已儲存至 ${savedPath}`; link.textContent = '已儲存 ✓'; }
-        catch (error) { meta.textContent = '儲存失敗，請再試一次'; link.textContent = '下載檔案 ↓'; }
+        try { const savedPath = await window.pywebview.api.save_file(id, job.filename || 'pianke-video.mp4'); if (!savedPath) { meta.textContent = '已取消儲存'; link.textContent = '下載檔案 ↓'; } else { meta.textContent = `已儲存至 ${savedPath}`; link.textContent = '已儲存 ✓'; } }
+        catch (error) { meta.textContent = `儲存失敗：${error.message || '請再試一次'}`; link.textContent = '下載檔案 ↓'; }
       });
       card.append(link); return;
     }

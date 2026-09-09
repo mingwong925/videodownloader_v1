@@ -39,10 +39,9 @@ def wait_for_server(port: int) -> None:
 class DesktopApi:
     def __init__(self, port: int) -> None:
         self.port = port
+        self.window = None
 
-    def download_file(self, job_id: str, filename: str) -> str:
-        downloads = Path.home() / "Downloads"
-        downloads.mkdir(exist_ok=True)
+    def save_file(self, job_id: str, filename: str) -> str:
         with jobs_lock:
             job = jobs.get(job_id)
         source_name = str(job.get("filename")) if job else filename
@@ -50,7 +49,16 @@ class DesktopApi:
         if not source.is_file():
             raise FileNotFoundError(f"找不到已完成檔案：{source.name}")
         safe_name = Path(source_name).name or f"pianke-{job_id}.mp4"
-        destination = downloads / safe_name
+        if self.window is None:
+            raise RuntimeError("桌面視窗尚未準備完成")
+        selected = self.window.create_file_dialog(
+            webview.SAVE_DIALOG,
+            directory=str(Path.home() / "Downloads"),
+            save_filename=safe_name,
+        )
+        if not selected:
+            return ""
+        destination = Path(selected[0] if isinstance(selected, (list, tuple)) else selected)
         shutil.copyfile(source, destination)
         return str(destination)
 
@@ -60,7 +68,9 @@ def main() -> None:
     server = Server(Config(app, host="127.0.0.1", port=port, log_level="warning"))
     threading.Thread(target=server.run, daemon=True).start()
     wait_for_server(port)
-    webview.create_window("片刻 | 萬用影片下載器", f"http://127.0.0.1:{port}", js_api=DesktopApi(port), width=1120, height=820, min_size=(720, 600))
+    desktop_api = DesktopApi(port)
+    window = webview.create_window("片刻 | 萬用影片下載器", f"http://127.0.0.1:{port}", js_api=desktop_api, width=1120, height=820, min_size=(720, 600))
+    desktop_api.window = window
     webview.start()
     server.should_exit = True
 
