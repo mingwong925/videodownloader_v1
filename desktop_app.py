@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import socket
+import shutil
 import sys
 import threading
 import time
-import urllib.request
 from pathlib import Path
 
 if "--yt-dlp" in sys.argv:
@@ -17,7 +17,7 @@ if "--yt-dlp" in sys.argv:
 import webview
 from uvicorn import Config, Server
 
-from app import app
+from app import DOWNLOAD_DIR, app, jobs, jobs_lock
 
 
 def get_free_port() -> int:
@@ -43,10 +43,15 @@ class DesktopApi:
     def download_file(self, job_id: str, filename: str) -> str:
         downloads = Path.home() / "Downloads"
         downloads.mkdir(exist_ok=True)
-        safe_name = Path(filename).name or f"pianke-{job_id}.mp4"
+        with jobs_lock:
+            job = jobs.get(job_id)
+        source_name = str(job.get("filename")) if job else filename
+        source = DOWNLOAD_DIR / Path(source_name).name
+        if not source.is_file():
+            raise FileNotFoundError(f"找不到已完成檔案：{source.name}")
+        safe_name = Path(source_name).name or f"pianke-{job_id}.mp4"
         destination = downloads / safe_name
-        with urllib.request.urlopen(f"http://127.0.0.1:{self.port}/api/file/{job_id}") as response:
-            destination.write_bytes(response.read())
+        shutil.copyfile(source, destination)
         return str(destination)
 
 
