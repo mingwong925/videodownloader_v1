@@ -1,0 +1,47 @@
+name: Build Desktop Installers
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Build Windows app
+        shell: cmd
+        run: build-windows.bat
+      - name: Install Inno Setup
+        shell: powershell
+        run: choco install innosetup --no-progress -y
+      - name: Build Windows installer
+        shell: powershell
+        run: iscc installer/windows-installer.iss
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pianke-Windows
+          path: installer-output/Pianke-Setup.exe
+
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Build macOS app
+        run: ./build-mac.sh
+      - name: Create macOS DMG
+        run: hdiutil create -volname "片刻" -srcfolder dist/Pianke.app -ov -format UDZO dist/Pianke.dmg
+      - name: Upload macOS installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pianke-macOS
+          path: dist/Pianke.dmg

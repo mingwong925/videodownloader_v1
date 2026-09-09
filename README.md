@@ -37,6 +37,15 @@ build-windows.bat
 
 Windows 輸出位置是 `dist\\Pianke\\Pianke.exe`。Mac 建置必須在 Mac 執行，Windows 建置必須在 Windows 執行；建置腳本會把網站資產、yt-dlp 與 FFmpeg 一起打包。
 
+## 安裝檔
+
+GitHub Actions 的 `Build Desktop Installers` workflow 會自動建立：
+
+- macOS：`Pianke.dmg`
+- Windows：`Pianke-Setup.exe`
+
+在 GitHub repository 的 **Actions** 頁面手動執行 workflow，完成後從 **Artifacts** 下載對應安裝檔；也可以建立 `v1.0.0` 之類的 tag 觸發建置。
+
 ## Render 部署
 
 專案已附上 `render.yaml`。將專案推送到 GitHub 後，在 Render 選擇 **New + > Blueprint**，連接該 repository，Render 會依照設定建立 Web Service。
