@@ -1,10 +1,18 @@
 from __future__ import annotations
 
 import socket
+import sys
 import threading
 import time
 import urllib.request
 from pathlib import Path
+
+if "--yt-dlp" in sys.argv:
+    sys.argv.remove("--yt-dlp")
+    import yt_dlp
+
+    yt_dlp.main()
+    raise SystemExit
 
 import webview
 from uvicorn import Config, Server

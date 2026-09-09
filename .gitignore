@@ -5,3 +5,4 @@ downloads/
 build/
 dist/
 *.spec
+.DS_Store

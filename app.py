@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+import sys
 import threading
 import uuid
 from pathlib import Path
@@ -61,7 +62,8 @@ def run_download(job_id: str, url: str, mode: str, quality: str) -> None:
     else:
         format_selector = {"best": "bv*+ba/b", "1080": "bv*[height<=1080]+ba/b[height<=1080]", "720": "bv*[height<=720]+ba/b[height<=720]", "480": "bv*[height<=480]+ba/b[height<=480]"}.get(quality, "bv*+ba/b")
         postprocessors = ["--merge-output-format", "mp4", "--recode-video", "mp4", "--postprocessor-args", "VideoConvertor:-c:v libx264 -pix_fmt yuv420p -c:a aac"]
-    command = ["yt-dlp", "--no-playlist", "--newline", "--ffmpeg-location", FFMPEG_PATH, "--format", format_selector, "--output", output_template, *postprocessors]
+    yt_dlp_command = [sys.executable, "--yt-dlp"] if getattr(sys, "frozen", False) else ["yt-dlp"]
+    command = [*yt_dlp_command, "--no-playlist", "--newline", "--ffmpeg-location", FFMPEG_PATH, "--format", format_selector, "--output", output_template, *postprocessors]
     hostname = (urlparse(url).hostname or "").lower()
     if "douyin.com" in hostname:
         command.extend(["--cookies-from-browser", "chrome", "--referer", "https://www.douyin.com/", "--user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131 Safari/537.36"])
