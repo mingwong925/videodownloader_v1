@@ -39,7 +39,11 @@ jobs:
       - name: Build macOS app
         run: ./build-mac.sh
       - name: Create macOS DMG
-        run: hdiutil create -volname "片刻" -srcfolder dist/Pianke.app -ov -format UDZO dist/Pianke.dmg
+        run: |
+          mkdir -p dmg-staging
+          cp -R dist/Pianke.app dmg-staging/
+          ln -s /Applications dmg-staging/Applications
+          hdiutil create -volname "片刻" -srcfolder dmg-staging -ov -format UDZO dist/Pianke.dmg
       - name: Upload macOS installer
         uses: actions/upload-artifact@v4
         with:
