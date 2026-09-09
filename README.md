@@ -17,6 +17,26 @@ python app.py
 
 部分平台內容需要登入、年齡驗證或不是公開內容，這類網址不會被繞過；請只下載你有權使用的內容。
 
+## 桌面 App（Mac / Windows）
+
+桌面版會在你的電腦啟動本機下載服務，影片直接存到本機 `downloads/`，不需要 Render。
+
+在 macOS 建置：
+
+```bash
+chmod +x build-mac.sh
+./build-mac.sh
+open dist/Pianke.app
+```
+
+在 Windows 建置：
+
+```bat
+build-windows.bat
+```
+
+Windows 輸出位置是 `dist\\Pianke\\Pianke.exe`。Mac 建置必須在 Mac 執行，Windows 建置必須在 Windows 執行；建置腳本會把網站資產、yt-dlp 與 FFmpeg 一起打包。
+
 ## Render 部署
 
 專案已附上 `render.yaml`。將專案推送到 GitHub 後，在 Render 選擇 **New + > Blueprint**，連接該 repository，Render 會依照設定建立 Web Service。
