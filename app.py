@@ -103,6 +103,8 @@ def run_download(job_id: str, url: str, mode: str, quality: str) -> None:
             detail = next((line for line in reversed(output_lines) if line.startswith("ERROR:")), None)
             if detail and "Fresh cookies" in detail:
                 detail = "抖音要求有效 cookies。請先在 Chrome 登入 douyin.com，重新整理本工具後再下載。"
+            if detail and "Unsupported URL" in detail and "threads.com" in url:
+                detail = "Threads 目前沒有可用的 yt-dlp extractor；請使用平台提供的影片網址，或從支援的公開平台下載。"
             raise RuntimeError(detail or "yt-dlp 無法取得這個網址，可能需要登入、網址失效或內容不可公開存取")
         files = list(DOWNLOAD_DIR.glob(f"{job_id}_*"))
         if not files:
