@@ -15,6 +15,7 @@ async function pollJob(id, card) {
   try {
     const response = await fetch(`/api/download/${id}`); const job = await response.json();
     bar.style.width = `${job.progress || 0}%`;
+    if (job.thumbnail && !card.querySelector('.thumbnail')) { const thumbnail = document.createElement('img'); thumbnail.className = 'thumbnail'; thumbnail.src = job.thumbnail; thumbnail.alt = ''; thumbnail.loading = 'lazy'; card.prepend(thumbnail); }
     if (job.status === 'ready') {
       title.textContent = '下載完成'; meta.textContent = '按下按鈕將檔案儲存到你的電腦';
       const link = document.createElement('a'); link.className = 'download-link'; link.textContent = '下載檔案 ↓'; link.href = `/api/file/${encodeURIComponent(id)}`; link.download = ''; link.target = '_blank'; link.rel = 'noopener';

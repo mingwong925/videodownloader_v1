@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 import sys
@@ -63,7 +64,7 @@ def run_download(job_id: str, url: str, mode: str, quality: str) -> None:
         format_selector = {"best": "bv*+ba/b", "1080": "bv*[height<=1080]+ba/b[height<=1080]", "720": "bv*[height<=720]+ba/b[height<=720]", "480": "bv*[height<=480]+ba/b[height<=480]"}.get(quality, "bv*+ba/b")
         postprocessors = ["--merge-output-format", "mp4", "--recode-video", "mp4", "--postprocessor-args", "VideoConvertor:-c:v libx264 -pix_fmt yuv420p -c:a aac"]
     yt_dlp_command = [sys.executable, "--yt-dlp"] if getattr(sys, "frozen", False) else ["yt-dlp"]
-    command = [*yt_dlp_command, "--no-playlist", "--newline", "--ffmpeg-location", FFMPEG_PATH, "--format", format_selector, "--output", output_template, *postprocessors]
+    command = [*yt_dlp_command, "--no-playlist", "--newline", "--write-info-json", "--ffmpeg-location", FFMPEG_PATH, "--format", format_selector, "--output", output_template, *postprocessors]
     hostname = (urlparse(url).hostname or "").lower()
     if "douyin.com" in hostname:
         command.extend(["--cookies-from-browser", "chrome", "--referer", "https://www.douyin.com/", "--user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131 Safari/537.36"])
@@ -88,7 +89,18 @@ def run_download(job_id: str, url: str, mode: str, quality: str) -> None:
         files = list(DOWNLOAD_DIR.glob(f"{job_id}_*"))
         if not files:
             raise RuntimeError("下載完成但找不到輸出檔案")
-        source_path = files[0]
+        info_files = list(DOWNLOAD_DIR.glob(f"{job_id}_*.info.json"))
+        if info_files:
+            try:
+                metadata = json.loads(info_files[0].read_text(encoding="utf-8"))
+                if metadata.get("thumbnail"):
+                    update_job(job_id, thumbnail=str(metadata["thumbnail"]))
+            except (OSError, json.JSONDecodeError):
+                pass
+        media_files = [path for path in files if path.suffix != ".json"]
+        if not media_files:
+            raise RuntimeError("下載完成但找不到影片檔案")
+        source_path = media_files[0]
         if mode == "video":
             update_job(job_id, status="converting", progress=82)
             compatible_path = source_path.with_name(f"{source_path.stem}.compatible.mp4")
