@@ -12,4 +12,9 @@ body:before { content:""; position:fixed; inset:0; z-index:-1; opacity:.5; backg
 @media(max-width:620px){.shell{width:min(100% - 30px,1100px)}.topbar{padding:22px 0}.hero{padding:62px 0 42px}.hero h1{letter-spacing:-2px}.lede{font-size:15px}.url-row{flex-wrap:wrap}.url-row input{flex-basis:calc(100% - 55px)}.url-row button{width:100%; margin-top:4px}.options{padding-left:10px}.job{grid-template-columns:1fr}.job button{justify-self:start}footer{font-size:10px}}
 .thumbnail { width:120px; height:72px; object-fit:cover; display:block; background:#edf1e9; }
 .job-list .job { grid-template-columns:120px minmax(0,1fr) auto; }
+.job-content { grid-column:1 / -1; min-width:0; width:100%; }
+.job.has-thumbnail .job-content { grid-column:2; }
+.job-content .bar { width:100%; }
+.job.has-thumbnail .download-link { grid-column:3; }
+.job:not(.has-thumbnail) .download-link { grid-column:1 / -1; justify-self:start; }
 @media(max-width:620px){.job-list .job { grid-template-columns:96px minmax(0,1fr); }.thumbnail { width:96px; height:64px; }.job-list .job .download-link { grid-column:1 / -1; justify-self:start; }}

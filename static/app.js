@@ -7,7 +7,7 @@ mode.addEventListener('change', () => { qualityWrap.hidden = mode.value === 'aud
 function addJobCard(id) {
   emptyState.hidden = true;
   const card = document.createElement('article'); card.className = 'job'; card.id = `job-${id}`;
-  card.innerHTML = '<div><div class="job-title">正在準備下載…</div><div class="job-meta">佇列中</div><div class="bar"><i></i></div></div>';
+  card.innerHTML = '<div class="job-content"><div class="job-title">正在準備下載…</div><div class="job-meta">佇列中</div><div class="bar"><i></i></div></div>';
   jobList.prepend(card); return card;
 }
 function animateProgress(bar, target) {
@@ -30,7 +30,7 @@ async function pollJob(id, card) {
   try {
     const response = await fetch(`/api/download/${id}`); const job = await response.json();
     animateProgress(bar, job.progress || 0);
-    if (job.thumbnail && !card.querySelector('.thumbnail')) { const thumbnail = document.createElement('img'); thumbnail.className = 'thumbnail'; thumbnail.src = job.thumbnail; thumbnail.alt = ''; thumbnail.loading = 'lazy'; card.prepend(thumbnail); }
+    if (job.thumbnail && !card.querySelector('.thumbnail')) { const thumbnail = document.createElement('img'); thumbnail.className = 'thumbnail'; thumbnail.src = job.thumbnail; thumbnail.alt = ''; thumbnail.loading = 'lazy'; card.classList.add('has-thumbnail'); card.prepend(thumbnail); }
     if (job.status === 'ready') {
       title.textContent = '下載完成'; meta.textContent = '按下按鈕將檔案儲存到你的電腦';
       const link = document.createElement('a'); link.className = 'download-link'; link.textContent = '下載檔案 ↓'; link.href = `/api/file/${encodeURIComponent(id)}`; link.download = ''; link.target = '_blank'; link.rel = 'noopener';
