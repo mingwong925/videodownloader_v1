@@ -10,11 +10,26 @@ function addJobCard(id) {
   card.innerHTML = '<div><div class="job-title">正在準備下載…</div><div class="job-meta">佇列中</div><div class="bar"><i></i></div></div>';
   jobList.prepend(card); return card;
 }
+function animateProgress(bar, target) {
+  const next = Math.max(Number(bar.dataset.progress || 0), Math.min(100, Number(target) || 0));
+  const start = Number(bar.dataset.progress || 0);
+  if (next === start) return;
+  const startedAt = performance.now();
+  const duration = 700;
+  const step = (now) => {
+    const ratio = Math.min(1, (now - startedAt) / duration);
+    const eased = 1 - (1 - ratio) ** 3;
+    const value = start + (next - start) * eased;
+    bar.style.width = `${value}%`;
+    if (ratio < 1) window.requestAnimationFrame(step); else bar.dataset.progress = String(next);
+  };
+  window.requestAnimationFrame(step);
+}
 async function pollJob(id, card) {
   const title = card.querySelector('.job-title'); const meta = card.querySelector('.job-meta'); const bar = card.querySelector('i');
   try {
     const response = await fetch(`/api/download/${id}`); const job = await response.json();
-    bar.style.width = `${job.progress || 0}%`;
+    animateProgress(bar, job.progress || 0);
     if (job.thumbnail && !card.querySelector('.thumbnail')) { const thumbnail = document.createElement('img'); thumbnail.className = 'thumbnail'; thumbnail.src = job.thumbnail; thumbnail.alt = ''; thumbnail.loading = 'lazy'; card.prepend(thumbnail); }
     if (job.status === 'ready') {
       title.textContent = '下載完成'; meta.textContent = '按下按鈕將檔案儲存到你的電腦';
