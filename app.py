@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).parent
 DOWNLOAD_DIR = BASE_DIR / "downloads"
 DOWNLOAD_DIR.mkdir(exist_ok=True)
 FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
-ALLOWED_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "instagram.com", "www.instagram.com", "facebook.com", "www.facebook.com", "fb.watch", "x.com", "www.x.com", "twitter.com", "www.twitter.com", "tiktok.com", "www.tiktok.com", "douyin.com", "www.douyin.com", "m.douyin.com", "v.douyin.com", "iesdouyin.com", "www.iesdouyin.com", "bilibili.com", "www.bilibili.com", "m.bilibili.com", "b23.tv", "pinterest.com", "www.pinterest.com", "pin.it", "vimeo.com", "www.vimeo.com", "player.vimeo.com", "dailymotion.com", "www.dailymotion.com", "dai.ly", "twitch.tv", "www.twitch.tv", "clips.twitch.tv", "soundcloud.com", "www.soundcloud.com", "on.soundcloud.com", "xiaohongshu.com", "www.xiaohongshu.com", "xhslink.com", "weibo.com", "www.weibo.com", "weibo.cn", "www.weibo.cn", "kuaishou.com", "www.kuaishou.com", "v.kuaishou.com"}
+ALLOWED_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "instagram.com", "www.instagram.com", "facebook.com", "www.facebook.com", "fb.watch", "x.com", "www.x.com", "twitter.com", "www.twitter.com", "tiktok.com", "www.tiktok.com", "douyin.com", "www.douyin.com", "m.douyin.com", "v.douyin.com", "iesdouyin.com", "www.iesdouyin.com", "bilibili.com", "www.bilibili.com", "m.bilibili.com", "b23.tv", "pinterest.com", "www.pinterest.com", "pin.it", "vimeo.com", "www.vimeo.com", "player.vimeo.com", "dailymotion.com", "www.dailymotion.com", "dai.ly", "twitch.tv", "www.twitch.tv", "clips.twitch.tv", "soundcloud.com", "www.soundcloud.com", "on.soundcloud.com", "xiaohongshu.com", "www.xiaohongshu.com", "xhslink.com", "weibo.com", "www.weibo.com", "weibo.cn", "www.weibo.cn", "kuaishou.com", "www.kuaishou.com", "v.kuaishou.com", "threads.net", "www.threads.net", "threads.com", "www.threads.com"}
 jobs: dict[str, dict[str, str | int]] = {}
 jobs_lock = threading.Lock()
 
@@ -41,6 +41,10 @@ def normalize_source_url(url: str) -> str:
         modal_id = parse_qs(parsed.query).get("modal_id", [""])[0]
         if modal_id.isdigit():
             return f"https://www.douyin.com/video/{modal_id}"
+    if "weibo.com" in hostname and parsed.path.startswith("/l/wblive/p/show/"):
+        show_id = parsed.path.rsplit("/", 1)[-1]
+        if show_id:
+            return f"https://weibo.com/tv/show/{show_id}"
     return url
 
 
