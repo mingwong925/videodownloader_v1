@@ -44,7 +44,7 @@ async function pollJob(id, card) {
       card.append(link); return;
     }
     if (job.status === 'error') { card.classList.add('error'); title.textContent = '下載失敗'; meta.textContent = job.error || '請確認網址後再試一次'; return; }
-    meta.textContent = job.status === 'queued' ? '排隊中' : `${job.status === 'converting' ? '轉檔中' : '下載中'} ${job.progress || 0}%`; window.setTimeout(() => pollJob(id, card), 900);
+    meta.textContent = job.status === 'queued' ? '排隊中' : `${job.status === 'converting' ? '正在轉換' : '下載中'} ${job.progress || 0}%`; window.setTimeout(() => pollJob(id, card), 900);
   } catch (error) { card.classList.add('error'); title.textContent = '無法取得下載狀態'; meta.textContent = '服務可能正在休眠，請重新提交網址'; }
 }
 form.addEventListener('submit', async (event) => {
