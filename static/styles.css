@@ -18,3 +18,15 @@ body:before { content:""; position:fixed; inset:0; z-index:-1; opacity:.5; backg
 .job.has-thumbnail .download-link { grid-column:3; }
 .job:not(.has-thumbnail) .download-link { grid-column:1 / -1; justify-self:start; }
 @media(max-width:620px){.job-list .job { grid-template-columns:96px minmax(0,1fr); }.thumbnail { width:96px; height:64px; }.job-list .job .download-link { grid-column:1 / -1; justify-self:start; }}
+
+.job-list .job { display:flex; align-items:center; gap:12px; }
+.job-list .job .thumbnail { flex:0 0 120px; }
+.job-list .job .job-content { flex:1 1 auto; min-width:0; width:auto; }
+.job-list .job .download-link { flex:0 0 auto; }
+.job-list .job .bar { width:100%; }
+@media(max-width:620px) {
+	.job-list .job { flex-wrap:wrap; }
+	.job-list .job .thumbnail { flex-basis:96px; width:96px; height:64px; }
+	.job-list .job .job-content { flex:1 1 calc(100% - 108px); }
+	.job-list .job .download-link { flex-basis:auto; }
+}
