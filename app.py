@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).parent
 DOWNLOAD_DIR = BASE_DIR / "downloads"
 DOWNLOAD_DIR.mkdir(exist_ok=True)
 FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
-ALLOWED_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "instagram.com", "www.instagram.com", "facebook.com", "www.facebook.com", "fb.watch", "x.com", "www.x.com", "twitter.com", "www.twitter.com", "tiktok.com", "www.tiktok.com", "douyin.com", "www.douyin.com", "m.douyin.com", "v.douyin.com", "iesdouyin.com", "www.iesdouyin.com", "bilibili.com", "www.bilibili.com", "m.bilibili.com", "b23.tv", "pinterest.com", "www.pinterest.com", "pin.it", "vimeo.com", "www.vimeo.com", "player.vimeo.com", "dailymotion.com", "www.dailymotion.com", "dai.ly", "twitch.tv", "www.twitch.tv", "clips.twitch.tv", "soundcloud.com", "www.soundcloud.com", "on.soundcloud.com"}
+ALLOWED_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "instagram.com", "www.instagram.com", "facebook.com", "www.facebook.com", "fb.watch", "x.com", "www.x.com", "twitter.com", "www.twitter.com", "tiktok.com", "www.tiktok.com", "douyin.com", "www.douyin.com", "m.douyin.com", "v.douyin.com", "iesdouyin.com", "www.iesdouyin.com", "bilibili.com", "www.bilibili.com", "m.bilibili.com", "b23.tv", "pinterest.com", "www.pinterest.com", "pin.it", "vimeo.com", "www.vimeo.com", "player.vimeo.com", "dailymotion.com", "www.dailymotion.com", "dai.ly", "twitch.tv", "www.twitch.tv", "clips.twitch.tv", "soundcloud.com", "www.soundcloud.com", "on.soundcloud.com", "xiaohongshu.com", "www.xiaohongshu.com", "xhslink.com", "weibo.com", "www.weibo.com", "weibo.cn", "www.weibo.cn", "kuaishou.com", "www.kuaishou.com", "v.kuaishou.com"}
 jobs: dict[str, dict[str, str | int]] = {}
 jobs_lock = threading.Lock()
 
@@ -48,7 +48,7 @@ def validate_source(url: str) -> None:
     parsed = urlparse(url)
     hostname = (parsed.hostname or "").lower().rstrip(".")
     if parsed.scheme not in {"http", "https"} or hostname not in ALLOWED_HOSTS:
-        raise HTTPException(status_code=400, detail="目前只支援 YouTube、Instagram、Facebook、X、TikTok、抖音、bilibili、Pinterest、Vimeo、Dailymotion、Twitch 與 SoundCloud 網址")
+        raise HTTPException(status_code=400, detail="目前只支援 YouTube、Instagram、Facebook、X、TikTok、抖音、bilibili、Pinterest、Vimeo、Dailymotion、Twitch、SoundCloud、小紅書、微博與快手網址")
 
 
 def update_job(job_id: str, **values: str | int) -> None:
