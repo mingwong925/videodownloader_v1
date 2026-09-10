@@ -4,7 +4,7 @@ const qualityWrap = document.querySelector('#quality-wrap');
 const emptyState = document.querySelector('#empty-state');
 const jobList = document.querySelector('#job-list');
 if (new URLSearchParams(window.location.search).has('desktop')) {
-  document.querySelector('.eyebrow').textContent = 'ONE APP · MORE THAN 16 PLATFORMS';
+  document.querySelector('.eyebrow').textContent = 'ONE APP · MORE THAN 15 PLATFORMS';
   const otherSources = document.createElement('b'); otherSources.textContent = '其他來源'; document.querySelector('.platforms').append(otherSources);
 }
 mode.addEventListener('change', () => { qualityWrap.hidden = mode.value === 'audio'; });

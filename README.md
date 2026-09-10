@@ -2,7 +2,7 @@
 
 Copyright © 2026 Ming Wong.
 
-以 FastAPI 和 yt-dlp 建立的本機影片下載工具，支援公開的 YouTube、Instagram、Facebook、X/Twitter、TikTok、抖音、bilibili、Pinterest、Vimeo、Dailymotion、Twitch、SoundCloud、小紅書、微博、快手與 Threads 連結。
+以 FastAPI 和 yt-dlp 建立的本機影片下載工具，支援公開的 YouTube、Instagram、Facebook、X/Twitter、TikTok、抖音、bilibili、Pinterest、Vimeo、Dailymotion、Twitch、SoundCloud、小紅書、微博與快手連結。
 
 ## 啟動
 
