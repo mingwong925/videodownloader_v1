@@ -7,6 +7,7 @@ python3 -m PyInstaller --noconfirm --clean --windowed --onedir \
   --name Pianke \
   --icon assets/icon.icns \
   --add-data "static:static" \
+  --add-data "assets/icon-source.png:assets" \
   --collect-all imageio_ffmpeg \
   --collect-all yt_dlp \
   desktop_app.py

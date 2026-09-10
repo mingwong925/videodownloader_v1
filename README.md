@@ -23,6 +23,8 @@ python app.py
 
 桌面版會在你的電腦啟動本機下載服務，影片直接存到本機 `downloads/`，不需要 Render。
 
+桌面 App 啟動後會常駐 macOS Menu Bar 或 Windows system tray；從「片刻」圖示可以重新開啟下載視窗或退出 App。
+
 在 macOS 建置：
 
 ```bash
