@@ -94,7 +94,7 @@ def main() -> None:
         "片刻",
         pystray.Menu(pystray.MenuItem("開啟片刻", show_window, default=True), pystray.MenuItem("退出", quit_app)),
     )
-    threading.Thread(target=tray_icon.run, daemon=True).start()
+    tray_icon.run_detached()
     webview.start()
     tray_icon.stop()
     server.should_exit = True
