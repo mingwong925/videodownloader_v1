@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import ipaddress
 import re
 import subprocess
 import sys
@@ -28,6 +29,7 @@ class DownloadRequest(BaseModel):
     url: HttpUrl
     mode: str = "video"
     quality: str = "best"
+    desktop: bool = False
 
 
 app = FastAPI(title="抓片", description="Download public media from supported platforms")
@@ -48,10 +50,22 @@ def normalize_source_url(url: str) -> str:
     return url
 
 
-def validate_source(url: str) -> None:
+def validate_source(url: str, allow_unlisted: bool = False) -> None:
     parsed = urlparse(url)
     hostname = (parsed.hostname or "").lower().rstrip(".")
-    if parsed.scheme not in {"http", "https"} or hostname not in ALLOWED_HOSTS:
+    if parsed.scheme not in {"http", "https"}:
+        raise HTTPException(status_code=400, detail="只支援公開的 http 或 https 網址")
+    if allow_unlisted:
+        if hostname in {"localhost", "localhost.localdomain"} or hostname.endswith(".local"):
+            raise HTTPException(status_code=400, detail="不允許 localhost 或區域網路網址")
+        try:
+            address = ipaddress.ip_address(hostname)
+        except ValueError:
+            address = None
+        if address and (address.is_private or address.is_loopback or address.is_link_local or address.is_reserved):
+            raise HTTPException(status_code=400, detail="不允許本機或私有網路 IP")
+        return
+    if hostname not in ALLOWED_HOSTS:
         raise HTTPException(status_code=400, detail="目前只支援 YouTube、Instagram、Facebook、X、TikTok、抖音、bilibili、Pinterest、Vimeo、Dailymotion、Twitch、SoundCloud、小紅書、微博與快手網址")
 
 
@@ -169,7 +183,7 @@ def create_download(request: DownloadRequest, background_tasks: BackgroundTasks)
     if request.mode not in {"video", "audio"}:
         raise HTTPException(status_code=400, detail="不支援的輸出格式")
     source_url = normalize_source_url(str(request.url))
-    validate_source(source_url)
+    validate_source(source_url, allow_unlisted=request.desktop)
     job_id = uuid.uuid4().hex
     with jobs_lock:
         jobs[job_id] = {"status": "queued", "progress": 0}

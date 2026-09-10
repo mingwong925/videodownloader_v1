@@ -53,7 +53,7 @@ async function pollJob(id, card) {
 }
 form.addEventListener('submit', async (event) => {
   event.preventDefault(); const button = form.querySelector('button'); button.disabled = true; button.firstChild.textContent = '建立工作中 ';
-  try { const response = await fetch('/api/download', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ url:document.querySelector('#url').value, mode:mode.value, quality:document.querySelector('#quality').value }) }); const data = await response.json(); if (!response.ok) throw new Error(data.detail || '網址無法處理'); pollJob(data.job_id, addJobCard(data.job_id)); document.querySelector('#url').value = ''; }
+  try { const isDesktop = new URLSearchParams(window.location.search).has('desktop'); const response = await fetch('/api/download', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ url:document.querySelector('#url').value, mode:mode.value, quality:document.querySelector('#quality').value, desktop:isDesktop }) }); const data = await response.json(); if (!response.ok) throw new Error(data.detail || '網址無法處理'); pollJob(data.job_id, addJobCard(data.job_id)); document.querySelector('#url').value = ''; }
   catch (error) { const card = addJobCard(`error-${Date.now()}`); card.classList.add('error'); card.querySelector('.job-title').textContent = '無法建立下載'; card.querySelector('.job-meta').textContent = error.message; }
   finally { button.disabled = false; button.firstChild.textContent = '開始抓取 '; }
 });
