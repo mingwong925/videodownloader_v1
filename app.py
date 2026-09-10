@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-import json
 import ipaddress
 import re
 import subprocess
 import sys
 import threading
 import uuid
-from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import parse_qs, urljoin, urlparse
-from urllib.request import Request, urlopen
+from urllib.parse import parse_qs, urlparse
 
 import imageio_ffmpeg
 from fastapi import BackgroundTasks, FastAPI, HTTPException
@@ -34,52 +31,8 @@ class DownloadRequest(BaseModel):
     desktop: bool = False
 
 
-class InspectRequest(BaseModel):
-    url: HttpUrl
-    desktop: bool = False
-
-
-class MediaLinkParser(HTMLParser):
-    def __init__(self) -> None:
-        super().__init__()
-        self.links: list[dict[str, str]] = []
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        values = dict(attrs)
-        candidates = [values.get("src"), values.get("href"), values.get("content")]
-        for candidate in candidates:
-            if candidate and (".mp4" in candidate.lower() or ".m3u8" in candidate.lower() or tag in {"video", "source"}):
-                self.links.append({"url": candidate, "type": "hls" if ".m3u8" in candidate.lower() else "video"})
-
-
 app = FastAPI(title="抓片", description="Download public media from supported platforms")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-
-
-@app.post("/api/inspect")
-def inspect_page(request: InspectRequest) -> dict[str, object]:
-    page_url = str(request.url)
-    validate_source(page_url, allow_unlisted=request.desktop)
-    try:
-        response_request = Request(page_url, headers={"User-Agent": "Mozilla/5.0"})
-        with urlopen(response_request, timeout=15) as response:
-            content_type = response.headers.get("content-type", "")
-            body = response.read(5_000_000).decode("utf-8", errors="ignore")
-            final_url = response.geturl()
-    except Exception as error:
-        if "HTTP Error 403" in str(error):
-            raise HTTPException(status_code=403, detail="網站拒絕自動讀取（HTTP 403），請先在瀏覽器登入或使用網站提供的影片連結。") from error
-        raise HTTPException(status_code=400, detail=f"無法讀取網頁：{error}") from error
-    parser = MediaLinkParser()
-    parser.feed(body)
-    links: list[dict[str, str]] = []
-    seen: set[str] = set()
-    for item in parser.links:
-        media_url = urljoin(final_url, item["url"])
-        if media_url not in seen and urlparse(media_url).scheme in {"http", "https"}:
-            seen.add(media_url)
-            links.append({"url": media_url, "type": item["type"]})
-    return {"page_url": final_url, "content_type": content_type, "links": links[:20]}
 
 
 def normalize_source_url(url: str) -> str:

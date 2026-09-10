@@ -3,7 +3,6 @@ const mode = document.querySelector('#mode');
 const qualityWrap = document.querySelector('#quality-wrap');
 const emptyState = document.querySelector('#empty-state');
 const jobList = document.querySelector('#job-list');
-const inspectResults = document.querySelector('#inspect-results');
 if (new URLSearchParams(window.location.search).has('desktop')) {
   document.querySelector('.eyebrow').textContent = 'ONE APP · MORE THAN 15 PLATFORMS';
   const otherSources = document.createElement('b'); otherSources.textContent = '其他來源'; document.querySelector('.platforms').append(otherSources);
@@ -57,17 +56,4 @@ form.addEventListener('submit', async (event) => {
   try { const isDesktop = new URLSearchParams(window.location.search).has('desktop'); const response = await fetch('/api/download', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ url:document.querySelector('#url').value, mode:mode.value, quality:document.querySelector('#quality').value, desktop:isDesktop }) }); const data = await response.json(); if (!response.ok) throw new Error(data.detail || '網址無法處理'); pollJob(data.job_id, addJobCard(data.job_id)); document.querySelector('#url').value = ''; }
   catch (error) { const card = addJobCard(`error-${Date.now()}`); card.classList.add('error'); card.querySelector('.job-title').textContent = '無法建立下載'; card.querySelector('.job-meta').textContent = error.message; }
   finally { button.disabled = false; button.firstChild.textContent = '開始抓取 '; }
-});
-
-document.querySelector('#inspect-submit').addEventListener('click', async () => {
-  const url = document.querySelector('#inspect-url').value;
-  inspectResults.hidden = false; inspectResults.textContent = '正在分析頁面…';
-  try {
-    const isDesktop = new URLSearchParams(window.location.search).has('desktop');
-    const response = await fetch('/api/inspect', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ url, desktop:isDesktop }) });
-    const data = await response.json(); if (!response.ok) throw new Error(data.detail || '分析失敗');
-    inspectResults.replaceChildren();
-    if (!data.links?.length) { inspectResults.textContent = '頁面沒有找到公開影片連結；動態載入、登入或 DRM 影片可能無法分析。'; return; }
-    data.links.forEach((item) => { const link = document.createElement('button'); link.type = 'button'; link.textContent = `${item.type.toUpperCase()} · ${item.url}`; link.onclick = () => { document.querySelector('#url').value = item.url; inspectResults.hidden = true; }; inspectResults.append(link); });
-  } catch (error) { inspectResults.textContent = error.message; }
 });
