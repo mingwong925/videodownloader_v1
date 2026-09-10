@@ -60,7 +60,7 @@ form.addEventListener('submit', async (event) => {
 });
 
 document.querySelector('#inspect-submit').addEventListener('click', async () => {
-  const url = document.querySelector('#url').value;
+  const url = document.querySelector('#inspect-url').value;
   inspectResults.hidden = false; inspectResults.textContent = '正在分析頁面…';
   try {
     const isDesktop = new URLSearchParams(window.location.search).has('desktop');
