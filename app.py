@@ -67,6 +67,8 @@ def inspect_page(request: InspectRequest) -> dict[str, object]:
             body = response.read(5_000_000).decode("utf-8", errors="ignore")
             final_url = response.geturl()
     except Exception as error:
+        if "HTTP Error 403" in str(error):
+            raise HTTPException(status_code=403, detail="網站拒絕自動讀取（HTTP 403），請先在瀏覽器登入或使用網站提供的影片連結。") from error
         raise HTTPException(status_code=400, detail=f"無法讀取網頁：{error}") from error
     parser = MediaLinkParser()
     parser.feed(body)
