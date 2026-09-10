@@ -3,6 +3,7 @@ const mode = document.querySelector('#mode');
 const qualityWrap = document.querySelector('#quality-wrap');
 const emptyState = document.querySelector('#empty-state');
 const jobList = document.querySelector('#job-list');
+if (new URLSearchParams(window.location.search).has('desktop')) document.querySelector('.eyebrow').textContent = 'ONE APP · FIFTEEN PLATFORMS';
 mode.addEventListener('change', () => { qualityWrap.hidden = mode.value === 'audio'; });
 function addJobCard(id) {
   emptyState.hidden = true;

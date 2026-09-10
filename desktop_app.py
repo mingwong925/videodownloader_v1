@@ -77,7 +77,7 @@ def main() -> None:
     threading.Thread(target=server.run, daemon=True).start()
     wait_for_server(port)
     desktop_api = DesktopApi(port)
-    window = webview.create_window("片刻影片下載", f"http://127.0.0.1:{port}", js_api=desktop_api, width=1120, height=820, min_size=(720, 600))
+    window = webview.create_window("片刻影片下載", f"http://127.0.0.1:{port}?desktop=1", js_api=desktop_api, width=1120, height=820, min_size=(720, 600))
     desktop_api.window = window
 
     def show_window(icon: pystray.Icon, item: pystray.MenuItem) -> None:
