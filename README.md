@@ -1,6 +1,6 @@
 # 抓片 / Universal Video Downloader
 
-以 FastAPI 和 yt-dlp 建立的本機影片下載工具，支援公開的 YouTube、Instagram、Facebook、X/Twitter、TikTok、抖音與 bilibili 連結。
+以 FastAPI 和 yt-dlp 建立的本機影片下載工具，支援公開的 YouTube、Instagram、Facebook、X/Twitter、TikTok、抖音、bilibili 與 Pinterest 連結。
 
 ## 啟動
 
