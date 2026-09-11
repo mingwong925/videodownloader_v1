@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import ipaddress
+import json
 import re
 import subprocess
 import sys
 import threading
 import uuid
 from pathlib import Path
+from urllib.request import Request, urlopen
 from urllib.parse import parse_qs, urlparse
 
 import imageio_ffmpeg
@@ -18,10 +20,15 @@ from pydantic import BaseModel, HttpUrl
 BASE_DIR = Path(__file__).parent
 DOWNLOAD_DIR = BASE_DIR / "downloads"
 DOWNLOAD_DIR.mkdir(exist_ok=True)
+EXTERNAL_YTDLP_DIR = Path.home() / "Library" / "Application Support" / "Pianke"
+EXTERNAL_YTDLP_PATH = EXTERNAL_YTDLP_DIR / "yt-dlp"
+YTDLP_RELEASE_API = "https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest"
 FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
 ALLOWED_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "instagram.com", "www.instagram.com", "facebook.com", "www.facebook.com", "fb.watch", "x.com", "www.x.com", "twitter.com", "www.twitter.com", "tiktok.com", "www.tiktok.com", "douyin.com", "www.douyin.com", "m.douyin.com", "v.douyin.com", "iesdouyin.com", "www.iesdouyin.com", "bilibili.com", "www.bilibili.com", "m.bilibili.com", "b23.tv", "pinterest.com", "www.pinterest.com", "pin.it", "vimeo.com", "www.vimeo.com", "player.vimeo.com", "dailymotion.com", "www.dailymotion.com", "dai.ly", "twitch.tv", "www.twitch.tv", "clips.twitch.tv", "soundcloud.com", "www.soundcloud.com", "on.soundcloud.com", "xiaohongshu.com", "www.xiaohongshu.com", "xhslink.com", "weibo.com", "www.weibo.com", "weibo.cn", "www.weibo.cn", "kuaishou.com", "www.kuaishou.com", "v.kuaishou.com", "threads.net", "www.threads.net", "threads.com", "www.threads.com"}
 jobs: dict[str, dict[str, str | int]] = {}
 jobs_lock = threading.Lock()
+ytdlp_update_lock = threading.Lock()
+ytdlp_startup_checked = False
 
 
 class DownloadRequest(BaseModel):
@@ -33,7 +40,6 @@ class DownloadRequest(BaseModel):
 
 app = FastAPI(title="抓片", description="Download public media from supported platforms")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-
 
 def normalize_source_url(url: str) -> str:
     parsed = urlparse(url)
@@ -73,6 +79,51 @@ def update_job(job_id: str, **values: str | int) -> None:
         jobs[job_id].update(values)
 
 
+def get_ytdlp_command() -> list[str]:
+    global ytdlp_startup_checked
+    if not getattr(sys, "frozen", False):
+        return ["yt-dlp"]
+    with ytdlp_update_lock:
+        try:
+            if ytdlp_startup_checked and EXTERNAL_YTDLP_PATH.is_file():
+                return [str(EXTERNAL_YTDLP_PATH)]
+            EXTERNAL_YTDLP_DIR.mkdir(parents=True, exist_ok=True)
+            request = Request(YTDLP_RELEASE_API, headers={"User-Agent": "Pianke"})
+            with urlopen(request, timeout=8) as response:
+                release = json.load(response)
+            asset = next(item for item in release["assets"] if item["name"] == "yt-dlp_macos")
+            temporary_path = EXTERNAL_YTDLP_PATH.with_suffix(".download")
+            with urlopen(Request(asset["browser_download_url"], headers={"User-Agent": "Pianke"}), timeout=30) as response, temporary_path.open("wb") as output:
+                output.write(response.read())
+            temporary_path.replace(EXTERNAL_YTDLP_PATH)
+            EXTERNAL_YTDLP_PATH.chmod(0o755)
+            ytdlp_startup_checked = True
+            if EXTERNAL_YTDLP_PATH.is_file():
+                return [str(EXTERNAL_YTDLP_PATH)]
+        except (OSError, StopIteration, KeyError, TypeError, ValueError):
+            ytdlp_startup_checked = True
+            if EXTERNAL_YTDLP_PATH.is_file():
+                return [str(EXTERNAL_YTDLP_PATH)]
+    return [sys.executable, "--yt-dlp"]
+
+
+def update_web_ytdlp_on_startup() -> None:
+    if getattr(sys, "frozen", False):
+        return
+    try:
+        subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "yt-dlp"], check=False, timeout=60, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+
+@app.on_event("startup")
+def update_ytdlp_on_startup() -> None:
+    if getattr(sys, "frozen", False):
+        threading.Thread(target=get_ytdlp_command, daemon=True).start()
+    else:
+        update_web_ytdlp_on_startup()
+
+
 def run_download(job_id: str, url: str, mode: str, quality: str) -> None:
     output_template = str(DOWNLOAD_DIR / f"{job_id}_%(title).80s.%(ext)s")
     if mode == "audio":
@@ -80,7 +131,7 @@ def run_download(job_id: str, url: str, mode: str, quality: str) -> None:
     else:
         format_selector = {"best": "bv*+ba/b", "1080": "bv*[height<=1080]+ba/b[height<=1080]", "720": "bv*[height<=720]+ba/b[height<=720]", "480": "bv*[height<=480]+ba/b[height<=480]"}.get(quality, "bv*+ba/b")
         postprocessors = ["--merge-output-format", "mp4", "--recode-video", "mp4", "--postprocessor-args", "VideoConvertor:-c:v libx264 -pix_fmt yuv420p -c:a aac"]
-    yt_dlp_command = [sys.executable, "--yt-dlp"] if getattr(sys, "frozen", False) else ["yt-dlp"]
+    yt_dlp_command = get_ytdlp_command()
     command = [*yt_dlp_command, "--no-playlist", "--newline", "--write-info-json", "--ffmpeg-location", FFMPEG_PATH, "--format", format_selector, "--output", output_template, *postprocessors]
     hostname = (urlparse(url).hostname or "").lower()
     if "douyin.com" in hostname:

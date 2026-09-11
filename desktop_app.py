@@ -20,7 +20,7 @@ if "--yt-dlp" in sys.argv:
 import webview
 from uvicorn import Config, Server
 
-from app import DOWNLOAD_DIR, app, jobs, jobs_lock
+from app import DOWNLOAD_DIR, app, get_ytdlp_command, jobs, jobs_lock
 
 
 def resource_path(relative_path: str) -> Path:
@@ -72,6 +72,8 @@ class DesktopApi:
 
 
 def main() -> None:
+    if getattr(sys, "frozen", False):
+        threading.Thread(target=get_ytdlp_command, daemon=True).start()
     port = get_free_port()
     server = Server(Config(app, host="127.0.0.1", port=port, log_level="warning"))
     threading.Thread(target=server.run, daemon=True).start()
